@@ -21,11 +21,9 @@ function socialNames(account) {
     return Object.keys(account.social || {}).map(function (p) { return SOCIAL[p] ? SOCIAL[p].label : p; }).join(', ');
 }
 
+// เข้าสู่ระบบสำเร็จ: บันทึกผู้ใช้ลง localStorage แล้วไปหน้าเลือกชั้น
 function socialSignIn(name, student, isNew) {
-    let current = null;
-    try { current = JSON.parse(localStorage.getItem('food_user')); } catch (e) { current = null; }
-    if (!current || current.student !== student) localStorage.removeItem('food_cart');
-    localStorage.setItem('food_user', JSON.stringify({ name: name, student: student }));
+    setCurrentUser(name, student);
     location.href = isNew ? 'floors.html?welcome=1' : 'floors.html';
 }
 

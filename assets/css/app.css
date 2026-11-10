@@ -656,6 +656,43 @@ button, input, select, textarea { font-family: inherit; }
 .toast a   { color: var(--pink-deep); font-weight: 600; }
 .toast-close { position: absolute; top: 6px; right: 12px; color: var(--muted); font-size: 18px; }
 
+/* ---------- ลืมรหัสผ่าน ---------- */
+.label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.content .forgot-link { font-size: 13px; font-weight: 600; text-decoration: none; }
+.content .forgot-link:hover { text-decoration: underline; }
+.mini-steps { display: flex; gap: 6px; margin: 22px 0 4px; padding: 0; list-style: none; counter-reset: ms; font-size: 13px; }
+.mini-steps li { flex: 1; padding-top: 8px; color: #b5a2ab; border-top: 3px solid var(--line); counter-increment: ms; }
+.mini-steps li::before { content: counter(ms) ". "; }
+.mini-steps li.now { color: var(--pink-deep); font-weight: 700; border-top-color: var(--pink-dark); }
+.mini-steps li.done { color: var(--muted); border-top-color: var(--accent); }
+.mini-steps li.done::before { content: "✓ "; }
+#verify-form h2, #reset-form h2 { margin-top: 14px; }
+form[hidden], .reset-done[hidden] { display: none; }
+.reset-done { padding: 18px 0 4px; text-align: center; }
+.done-check {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 12px;
+    color: var(--green);
+    background: #e3f7ea;
+    border-radius: 50%;
+    font-size: 26px;
+    font-weight: 700;
+}
+.content .btn-link-submit {
+    display: block;
+    margin-top: 20px;
+    padding: 13px;
+    color: white;
+    background: var(--pink-dark);
+    border-radius: 10px;
+    font-weight: 600;
+    text-decoration: none;
+}
+.content .btn-link-submit:hover { background: var(--pink-deep); }
+
 /* ---------- สมัคร/เข้าสู่ระบบด้วยโซเชียล ---------- */
 .or-line {
     display: flex;
@@ -666,20 +703,30 @@ button, input, select, textarea { font-family: inherit; }
     font-size: 13px;
 }
 .or-line::before, .or-line::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-.social-buttons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; }
+.social-buttons { display: flex; justify-content: center; gap: 18px; margin-top: 18px; }
 .or-line + .social-buttons { margin-top: 0; }
 .content .social-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    height: 44px;
-    padding: 0 10px;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 50%;
+    transition: transform 0.15s, box-shadow 0.15s;
 }
-.social-btn svg { width: 20px; height: 20px; flex: none; }
+.content .social-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(40,20,30,0.18); }
+.content .social-btn:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+.social-btn svg { width: 26px; height: 26px; flex: none; }
+.social-x svg { width: 22px; height: 22px; }
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
 .content .social-facebook { color: white; background: #1877f2; border: 1px solid #1877f2; }
 .content .social-facebook:hover { background: #0f63d1; border-color: #0f63d1; }
 .content .social-x { color: white; background: #111111; border: 1px solid #111111; }
@@ -690,7 +737,7 @@ button, input, select, textarea { font-family: inherit; }
 .dialog .social-box { max-width: 400px; }
 .social-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .social-head h3 { margin: 0; }
-.social-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 9px; color: white; }
+.social-icon { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 50%; color: white; }
 .social-icon svg { width: 22px; height: 22px; }
 .social-facebook .social-icon { background: #1877f2; }
 .social-x .social-icon { background: #111111; }

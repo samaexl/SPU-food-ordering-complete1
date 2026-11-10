@@ -23,9 +23,13 @@
         <p class="muted">ใช้รหัสร้านค้าและรหัสผ่านเพื่อจัดการออเดอร์และคิวของร้าน</p>
         <label for="store-code">รหัสร้านค้า</label>
         <input id="store-code" autocomplete="username" placeholder="เช่น SHOP01" required>
-        <label for="store-pin">รหัสผ่านร้านค้า</label>
+        <div class="label-row">
+          <label for="store-pin">รหัสผ่านร้านค้า</label>
+          <a href="#forgot" class="forgot-link" data-auth="forgot">ลืมรหัสผ่าน?</a>
+        </div>
         <input id="store-pin" type="password" autocomplete="current-password" placeholder="รหัสผ่าน" required>
         <button class="btn primary full" type="submit">เข้าสู่ระบบ</button>
+        <p id="login-ok" class="ok-note" role="status"></p>
         <p id="login-error" class="error" role="alert"></p>
         <p class="auth-switch">ยังไม่มีร้านในระบบ? <a href="#register" data-auth="register">สมัครร้านค้าใหม่</a></p>
         <div class="demo-hint">ร้านตัวอย่าง: <b>SHOP01</b> – <b>SHOP06</b> รหัสผ่าน <b>1234</b></div>
@@ -69,6 +73,39 @@
         </div>
         <button class="btn primary full" type="submit">สมัครร้านค้า</button>
         <p class="auth-switch">มีร้านในระบบแล้ว? <a href="#login" data-auth="login">เข้าสู่ระบบ</a></p>
+      </form>
+
+      <!-- ลืมรหัสผ่านร้าน -->
+      <form id="forgot-form" class="login-card hidden" novalidate>
+        <h1>ลืมรหัสผ่านร้าน</h1>
+        <p class="muted" id="fg-intro">ยืนยันด้วยรหัสร้านและเบอร์โทรร้านที่ลงทะเบียนไว้</p>
+        <div id="fg-verify">
+          <div class="field">
+            <label for="fg-code">รหัสร้านค้า</label>
+            <input id="fg-code" autocomplete="username" placeholder="เช่น SHOP07">
+            <small class="field-error"></small>
+          </div>
+          <div class="field">
+            <label for="fg-phone">เบอร์โทรร้าน</label>
+            <input id="fg-phone" type="tel" inputmode="numeric" maxlength="10" placeholder="08xxxxxxxx">
+            <small class="field-error"></small>
+          </div>
+        </div>
+        <div id="fg-reset" class="hidden">
+          <div class="field">
+            <label for="fg-pin">รหัสผ่านใหม่</label>
+            <input id="fg-pin" type="password" autocomplete="new-password" placeholder="อย่างน้อย 4 ตัว">
+            <small class="field-error"></small>
+          </div>
+          <div class="field">
+            <label for="fg-pin2">ยืนยันรหัสผ่านใหม่</label>
+            <input id="fg-pin2" type="password" autocomplete="new-password" placeholder="กรอกอีกครั้ง">
+            <small class="field-error"></small>
+          </div>
+        </div>
+        <p id="fg-error" class="error" role="alert"></p>
+        <button id="fg-submit" class="btn primary full" type="submit">ถัดไป</button>
+        <p class="auth-switch">นึกออกแล้ว? <a href="#login" data-auth="login">กลับไปเข้าสู่ระบบ</a></p>
       </form>
 
       <!-- สมัครสำเร็จ -->

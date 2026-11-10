@@ -418,20 +418,98 @@ function hashText(text) {
     return (h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0');
 }
 
+// แปลงรหัสผ่านเป็นรหัสแฮชก่อนเก็บ (ไม่เก็บรหัสผ่านตัวจริง)
+// หมายเหตุ: เป็นแฮชแบบง่ายสำหรับระบบทดสอบ ระบบจริงควรแฮชที่เซิร์ฟเวอร์ด้วย bcrypt
 function passwordHash(student, password) {
     return hashText('spu:' + student + ':' + password);
 }
 
+/* ---------- บัญชีนักศึกษาทั้งหมด (localStorage คีย์ 'food_students') ----------
+   รูปแบบ: { '68000001': { name, phone, pass (รหัสผ่านที่แฮชแล้ว), createdAt }, ... } */
 function loadStudents() {
-    let list = {};
-    try { list = JSON.parse(localStorage.getItem('food_students')) || {}; } catch (e) { list = {}; }
-    return list;
+    try {
+        return JSON.parse(localStorage.getItem('food_students')) || {};
+    } catch (e) {
+        return {};
+    }
 }
 
 function saveStudents(list) {
     localStorage.setItem('food_students', JSON.stringify(list));
 }
 
+/* ---------- กันเดาข้อมูลกู้รหัสผ่าน: ผิด 5 ครั้ง พัก 60 วินาที ---------- */
+const MAX_TRIES = 5;
+const LOCK_MS = 60000;
+
+function loadTries() {
+    try { return JSON.parse(localStorage.getItem('food_tries')) || {}; } catch (e) { return {}; }
+}
+
+// คืนจำนวนวินาทีที่ยังต้องรอ (0 = ลองได้)
+function lockedSeconds(key) {
+    let t = loadTries()[key];
+    if (!t || !t.until) return 0;
+    return Math.max(0, Math.ceil((t.until - Date.now()) / 1000));
+}
+
+function noteFailedTry(key) {
+    let all = loadTries();
+    let t = all[key] || { n: 0, until: 0 };
+    if (t.until && t.until <= Date.now()) t = { n: 0, until: 0 };   // พ้นเวลาพักแล้ว เริ่มนับใหม่
+    t.n++;
+    if (t.n >= MAX_TRIES) t.until = Date.now() + LOCK_MS;
+    all[key] = t;
+    localStorage.setItem('food_tries', JSON.stringify(all));
+    return MAX_TRIES - t.n;   // จำนวนครั้งที่เหลือ
+}
+
+function clearTries(key) {
+    let all = loadTries();
+    delete all[key];
+    localStorage.setItem('food_tries', JSON.stringify(all));
+}
+
+// เทียบเบอร์โทรโดยไม่สนขีด/ช่องว่าง
+function samePhone(a, b) {
+    let x = String(a || '').replace(/[^0-9]/g, '');
+    let y = String(b || '').replace(/[^0-9]/g, '');
+    return x !== '' && x === y;
+}
+
+function sameName(a, b) {
+    let clean = function (s) { return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase(); };
+    return clean(a) !== '' && clean(a) === clean(b);
+}
+
+/* ==========================================================
+   ผู้ใช้ที่เข้าสู่ระบบอยู่ (เก็บใน localStorage คีย์ 'food_user')
+   รูปแบบข้อมูล: { name: 'ชื่อ-นามสกุล', student: 'รหัสนักศึกษา 8 หลัก' }
+========================================================== */
+
+// อ่านผู้ใช้ที่ล็อกอินอยู่ ถ้ายังไม่ล็อกอิน (หรือข้อมูลเสีย) จะได้ null
+function getCurrentUser() {
+    try {
+        return JSON.parse(localStorage.getItem('food_user'));
+    } catch (e) {
+        return null;
+    }
+}
+
+// บันทึกว่าใครเข้าสู่ระบบ (ใช้ตอนล็อกอิน / สมัครสมาชิก / ล็อกอินด้วยโซเชียล)
+function setCurrentUser(name, student) {
+    let oldUser = getCurrentUser();
+
+    // ถ้าเปลี่ยนเป็นคนอื่น ให้ล้างตะกร้าของคนเดิมทิ้ง
+    if (oldUser === null || oldUser.student !== student) {
+        localStorage.removeItem('food_cart');
+    }
+
+    // JSON.stringify แปลง object เป็นข้อความ เพราะ localStorage เก็บได้แค่ข้อความ
+    localStorage.setItem('food_user', JSON.stringify({ name: name, student: student }));
+}
+
+// ออกจากระบบ: ลบข้อมูลผู้ใช้และตะกร้า แล้วกลับหน้าแรก
 function logout() {
     localStorage.removeItem('food_user');
     localStorage.removeItem('food_cart');

@@ -80,9 +80,13 @@ function adminLogin(event) {
     let code = $('store-code').value.trim().toUpperCase();
     let pin = $('store-pin').value.trim();
     let error = $('login-error');
+    $('login-ok').textContent = '';
     let storeId = findStoreIdByCode(code);
     if (!storeId) { error.textContent = 'ไม่พบรหัสร้านนี้ (ตัวอย่าง: SHOP01)'; return; }
-    if (getStoreConfigs()[storeId].pin !== pin) { error.textContent = 'รหัสผ่านไม่ถูกต้อง'; return; }
+    if (getStoreConfigs()[storeId].pin !== pin) {
+        error.innerHTML = 'รหัสผ่านไม่ถูกต้อง <a href="#forgot" data-auth="forgot">ลืมรหัสผ่าน?</a>';
+        return;
+    }
     error.textContent = '';
     sessionStorage.setItem('food_merchant', JSON.stringify({ storeId: Number(storeId), at: Date.now() }));
     startApp(Number(storeId));
@@ -605,6 +609,9 @@ function showAuth(which) {
     $('login-form').classList.toggle('hidden', which !== 'login');
     $('register-form').classList.toggle('hidden', which !== 'register');
     $('register-done').classList.toggle('hidden', which !== 'done');
+    $('forgot-form').classList.toggle('hidden', which !== 'forgot');
+    $('login-ok').textContent = '';
+    if (which === 'forgot') resetForgot();
     if (which === 'register') {
         $('reg-shop-floor').innerHTML = foodData.map(function (f) {
             return '<option value="' + f.id + '">' + esc(f.name) + '</option>';
@@ -612,7 +619,84 @@ function showAuth(which) {
         $('reg-shop-name').focus();
     }
     if (which === 'login') $('store-code').focus();
-    history.replaceState(null, '', which === 'register' ? '#register' : location.pathname);
+    history.replaceState(null, '', which === 'register' || which === 'forgot' ? '#' + which : location.pathname);
+}
+
+/* ---------- ลืมรหัสผ่านร้าน: ยืนยันด้วยรหัสร้าน + เบอร์โทรร้าน ---------- */
+let forgotStoreId = null;   // ร้านที่ยืนยันตัวตนผ่านแล้ว
+
+function resetForgot() {
+    forgotStoreId = null;
+    $('forgot-form').reset();
+    ['fg-code', 'fg-phone', 'fg-pin', 'fg-pin2'].forEach(function (id) { regError(id, ''); });
+    $('fg-error').textContent = '';
+    $('fg-verify').classList.remove('hidden');
+    $('fg-reset').classList.add('hidden');
+    $('fg-intro').textContent = 'ยืนยันด้วยรหัสร้านและเบอร์โทรร้านที่ลงทะเบียนไว้';
+    $('fg-submit').textContent = 'ถัดไป';
+    let typed = $('store-code').value.trim().toUpperCase();
+    if (typed) $('fg-code').value = typed;
+    setTimeout(function () { $(typed ? 'fg-phone' : 'fg-code').focus(); }, 0);
+}
+
+function submitForgot(event) {
+    event.preventDefault();
+    let error = $('fg-error');
+    error.textContent = '';
+
+    // ขั้นที่ 2: ตั้งรหัสผ่านใหม่
+    if (forgotStoreId) {
+        let pin = $('fg-pin').value.trim();
+        let pin2 = $('fg-pin2').value.trim();
+        let ok = regError('fg-pin', pin.length < 4 ? 'รหัสผ่านอย่างน้อย 4 ตัว' : '');
+        ok = regError('fg-pin2', pin2 !== pin ? 'รหัสผ่านไม่ตรงกัน' : '') && ok;
+        if (!ok) return;
+        let configs = getStoreConfigs();
+        if (!configs[forgotStoreId]) { resetForgot(); return; }
+        configs[forgotStoreId].pin = pin;
+        configs[forgotStoreId].pinChangedAt = Date.now();
+        saveStoreConfigs(configs);
+        let code = configs[forgotStoreId].code;
+        showAuth('login');
+        $('store-code').value = code;
+        $('store-pin').value = '';
+        $('login-error').textContent = '';
+        $('login-ok').textContent = 'ตั้งรหัสผ่านใหม่ของ ' + code + ' แล้ว เข้าสู่ระบบด้วยรหัสใหม่ได้เลย';
+        $('store-pin').focus();
+        return;
+    }
+
+    // ขั้นที่ 1: ยืนยันตัวตน
+    let code = $('fg-code').value.trim().toUpperCase();
+    let phone = $('fg-phone').value.trim();
+    let ok = regError('fg-code', code ? '' : 'กรุณากรอกรหัสร้าน');
+    ok = regError('fg-phone', /^0[0-9]{8,9}$/.test(phone) ? '' : 'กรอกเบอร์โทร 9–10 หลัก เช่น 0812345678') && ok;
+    if (!ok) return;
+
+    let key = 'shop:' + code;
+    let wait = lockedSeconds(key);
+    if (wait > 0) { error.textContent = 'กรอกผิดหลายครั้ง กรุณารอ ' + wait + ' วินาทีแล้วลองใหม่'; return; }
+
+    let storeId = findStoreIdByCode(code);
+    let cfg = storeId ? getStoreConfigs()[storeId] : null;
+    if (cfg && !cfg.phone) {
+        error.textContent = 'ร้านนี้ยังไม่ได้ลงทะเบียนเบอร์โทร จึงตั้งรหัสใหม่เองไม่ได้ กรุณาติดต่อผู้ดูแลระบบ';
+        return;
+    }
+    if (!cfg || !samePhone(cfg.phone, phone)) {
+        let left = noteFailedTry(key);
+        error.textContent = left > 0
+            ? 'รหัสร้านหรือเบอร์โทรไม่ตรงกับข้อมูลร้าน (เหลือ ' + left + ' ครั้ง)'
+            : 'กรอกผิดหลายครั้ง กรุณารอ ' + lockedSeconds(key) + ' วินาทีแล้วลองใหม่';
+        return;
+    }
+    clearTries(key);
+    forgotStoreId = storeId;
+    $('fg-verify').classList.add('hidden');
+    $('fg-reset').classList.remove('hidden');
+    $('fg-intro').textContent = 'ตั้งรหัสผ่านใหม่สำหรับ ' + findStore(storeId).name + ' (' + cfg.code + ')';
+    $('fg-submit').textContent = 'บันทึกรหัสผ่านใหม่';
+    $('fg-pin').focus();
 }
 
 function regError(id, text) {
@@ -628,8 +712,8 @@ function registerShop(event) {
     let floorId = Number($('reg-shop-floor').value);
     let owner = $('reg-owner').value.trim();
     let phone = $('reg-shop-phone').value.trim();
-    let pin = $('reg-shop-pin').value;
-    let pin2 = $('reg-shop-pin2').value;
+    let pin = $('reg-shop-pin').value.trim();
+    let pin2 = $('reg-shop-pin2').value.trim();
 
     let taken = allStores().some(function (s) { return s.name.toLowerCase() === name.toLowerCase(); });
     let ok = true;
@@ -671,6 +755,13 @@ function registerShop(event) {
 }
 
 $('register-form').addEventListener('submit', registerShop);
+$('forgot-form').addEventListener('submit', submitForgot);
+$('forgot-form').addEventListener('input', function (e) {
+    let field = e.target.closest('.field');
+    if (field && field.classList.contains('invalid')) regError(e.target.id, '');
+    $('fg-error').textContent = '';
+});
+$('fg-phone').addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); });
 $('register-form').addEventListener('input', function (e) {
     let field = e.target.closest('.field');
     if (field && field.classList.contains('invalid')) regError(e.target.id, '');
@@ -693,4 +784,5 @@ document.addEventListener('click', function (e) {
     try { s = JSON.parse(sessionStorage.getItem('food_merchant')); } catch (e) { s = null; }
     if (s && findStore(s.storeId)) startApp(s.storeId);
     else if (location.hash === '#register') showAuth('register');
+    else if (location.hash === '#forgot') showAuth('forgot');
 })();

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPU Food • ลืมรหัสผ่าน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body class="auth-page">
+  <main class="login-layout">
+    <section class="login-brand">
+      <div>
+        <span class="brand-mark lg">SPU</span>
+        <h1>ลืมรหัสผ่าน<br>ตั้งใหม่ได้เอง</h1>
+        <p class="tagline">ยืนยันตัวตนด้วยข้อมูลที่ใช้ตอนสมัคร แล้วตั้งรหัสผ่านใหม่ได้ทันที</p>
+        <ul class="features">
+          <li><b>ใช้ข้อมูลตอนสมัคร</b><small>รหัสนักศึกษา ชื่อ-นามสกุล และเบอร์โทร</small></li>
+          <li><b>สมัครด้วยโซเชียล?</b><small>ไม่ต้องใช้รหัสผ่าน กดปุ่ม Facebook, X หรือ LINE ที่หน้าเข้าสู่ระบบ</small></li>
+          <li><b>ไม่ได้ใส่เบอร์โทรไว้</b><small>ติดต่อเจ้าหน้าที่โรงอาหารเพื่อรีเซ็ตรหัสผ่าน</small></li>
+        </ul>
+      </div>
+      <p class="brand-foot">SPU Food Ordering · เงินสดและ QR พร้อมเพย์</p>
+    </section>
+
+    <section class="login-panel">
+      <div class="content auth-card">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">SPU</span>
+          <span class="brand-text"><b>SPU Food</b><small>ระบบสั่งอาหารออนไลน์</small></span>
+        </a>
+
+        <ol class="mini-steps" aria-label="ขั้นตอน">
+          <li id="step-1" class="now">ยืนยันตัวตน</li>
+          <li id="step-2">ตั้งรหัสผ่านใหม่</li>
+        </ol>
+
+        <!-- ขั้นที่ 1 -->
+        <form id="verify-form" class="form-stack" novalidate>
+          <h2>ลืมรหัสผ่าน</h2>
+          <p class="muted">กรอกข้อมูลให้ตรงกับที่ใช้ตอนสมัครสมาชิก</p>
+          <div class="field">
+            <label for="fp-student">รหัสนักศึกษา</label>
+            <input id="fp-student" type="text" inputmode="numeric" maxlength="8" placeholder="8 หลัก" autocomplete="username">
+            <small class="field-error"></small>
+          </div>
+          <div class="field">
+            <label for="fp-name">ชื่อ-นามสกุล</label>
+            <input id="fp-name" type="text" maxlength="60" placeholder="ตามที่สมัครไว้" autocomplete="name">
+            <small class="field-error"></small>
+          </div>
+          <div class="field">
+            <label for="fp-phone">เบอร์โทรที่ใช้สมัคร</label>
+            <input id="fp-phone" type="tel" inputmode="numeric" maxlength="10" placeholder="08xxxxxxxx" autocomplete="tel">
+            <small class="field-error"></small>
+          </div>
+          <p id="verify-error" class="error" role="alert"></p>
+          <button type="submit" class="btn-submit">ถัดไป</button>
+        </form>
+
+        <!-- ขั้นที่ 2 -->
+        <form id="reset-form" class="form-stack" novalidate hidden>
+          <h2>ตั้งรหัสผ่านใหม่</h2>
+          <p class="muted">บัญชี <b id="reset-who"></b></p>
+          <div class="field">
+            <label for="fp-pass">รหัสผ่านใหม่</label>
+            <div class="pass-wrap">
+              <input id="fp-pass" type="password" autocomplete="new-password" placeholder="อย่างน้อย 6 ตัวอักษร">
+              <button type="button" class="pass-toggle" data-toggle-pass="fp-pass">แสดง</button>
+            </div>
+            <small class="field-error"></small>
+          </div>
+          <div class="field">
+            <label for="fp-pass2">ยืนยันรหัสผ่านใหม่</label>
+            <input id="fp-pass2" type="password" autocomplete="new-password" placeholder="กรอกอีกครั้ง">
+            <small class="field-error"></small>
+          </div>
+          <button type="submit" class="btn-submit">บันทึกรหัสผ่านใหม่</button>
+        </form>
+
+        <!-- สำเร็จ -->
+        <div id="reset-done" class="reset-done" hidden>
+          <div class="done-check" aria-hidden="true">✓</div>
+          <h2>เปลี่ยนรหัสผ่านแล้ว</h2>
+          <p class="muted">ใช้รหัสผ่านใหม่เข้าสู่ระบบได้เลย</p>
+          <a id="done-login" class="btn-link-submit" href="index.html">ไปหน้าเข้าสู่ระบบ</a>
+        </div>
+
+        <p class="auth-switch">นึกออกแล้ว? <a href="index.html">กลับไปเข้าสู่ระบบ</a></p>
+      </div>
+    </section>
+  </main>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/forgot.js"></script>
+</body>
+</html>
